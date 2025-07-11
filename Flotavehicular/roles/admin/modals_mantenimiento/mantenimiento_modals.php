@@ -54,8 +54,8 @@ $tipos = $tipos_query->fetchAll(PDO::FETCH_ASSOC);
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
-              <label for="fechaProgramadaAgregar" class="form-label">Fecha Programada</label>
-              <input type="date" class="form-control" id="fechaProgramadaAgregar" name="fecha_programada" required>
+              <label for="fechaProgr" class="form-label">Fecha Programada</label>
+              <input type="date" class="form-control" id="fechaProgr" name="fecha_programada" required>
             </div>
           </div>
           
@@ -370,9 +370,10 @@ $tipos = $tipos_query->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
   // Eliminar cualquier restricción de fecha mínima
-document.getElementById('fechaProgramadaAgregar').min = '';
+document.getElementById('fechaProgr').min = '';
 document.getElementById('fechaRealizadaAgregar').min = '';
 document.getElementById('proximoCambioFechaAgregar').min = '';
+
 function validarFormulario(form) {
   // Obtener valores del formulario
   const fechaProgramada = form.querySelector('[name="fecha_programada"]').value;

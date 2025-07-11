@@ -11,7 +11,9 @@ function abrirModalAgregarMantenimiento() {
     
     // Establecer fecha mínima como hoy para evitar fechas pasadas
     const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('fechaProgramadaAgregar').min = hoy;
+    document.getElementById('fechaRealizadaAgregar').max = hoy;
+    document.getElementById('fechaProgr').max = hoy;
+    document.getElementById('proximoCambioFechaAgregar').min = hoy;
     
     // Mostrar el modal de agregar mantenimiento
     const modal = new bootstrap.Modal(document.getElementById('modalAgregarMantenimiento'));
