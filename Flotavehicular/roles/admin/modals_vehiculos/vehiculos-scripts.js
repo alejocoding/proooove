@@ -55,25 +55,48 @@ function manejarAgregarVehiculo(event) {
     .then(response => {
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Server returned non-JSON response');
+            throw new Error('El servidor no respondió con JSON');
         }
         return response.json();
     })
     .then(data => {
         if (data.success) {
-            alert('Vehículo agregado exitosamente');
-            location.reload();
+            mostrarAlerta('Vehículo agregado exitosamente', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else if (data.redirect) {
             window.location.href = data.redirect;
         } else {
-            alert('Error: ' + (data.message || 'Error desconocido'));
+            mostrarAlerta(data.message || 'Error desconocido', 'danger');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error al procesar la solicitud: ' + error.message);
+        mostrarAlerta('Error al procesar la solicitud: ' + error.message, 'danger');
     });
 }
+
+
+function mostrarAlerta(mensaje, tipo = 'danger') {
+    const alerta = document.createElement('div');
+    alerta.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alerta.role = 'alert';
+    alerta.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    `;
+
+    const contenedor = document.getElementById('contenedor-alertas') || document.body;
+    contenedor.prepend(alerta);
+
+    setTimeout(() => {
+        alerta.classList.remove('show');
+        alerta.classList.add('hide');
+        setTimeout(() => alerta.remove(), 500);
+    }, 5000);
+}
+
+
+
 
 // Handle Edit Vehicle Form Submission
 function manejarEditarVehiculo(event) {

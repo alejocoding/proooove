@@ -34,19 +34,19 @@ try {
                     exit;
                 }
             }
-            
+
             // Verificar que la placa no exista
             $check_placa = $con->prepare("SELECT placa FROM vehiculos WHERE placa = :placa");
             $check_placa->bindParam(':placa', $_POST['placa']);
             $check_placa->execute();
-            
+
             if ($check_placa->rowCount() > 0) {
                 echo json_encode(['success' => false, 'message' => 'La placa ya existe en el sistema']);
                 exit;
             }
-            
 
-            
+
+
             // Procesar imagen si se subió
             $foto_vehiculo = null;
             if (isset($_FILES['foto_vehiculo']) && $_FILES['foto_vehiculo']['error'] === UPLOAD_ERR_OK) {
@@ -54,25 +54,69 @@ try {
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
                 }
-                
+
                 $file_extension = pathinfo($_FILES['foto_vehiculo']['name'], PATHINFO_EXTENSION);
                 $foto_vehiculo = $_POST['placa'] . '_' . time() . '.' . $file_extension;
                 $upload_path = $upload_dir . $foto_vehiculo;
                 $foto_vehiculo = 'uploads/vehiculos/' . $foto_vehiculo;
-                
+
                 if (!move_uploaded_file($_FILES['foto_vehiculo']['tmp_name'], $upload_path)) {
                     echo json_encode(['success' => false, 'message' => 'Error al subir la imagen']);
                     exit;
                 }
             }
-            
+
             // Obtener el documento del admin que está registrando
             $registrado_por = $_SESSION['documento'];
-            
+
+            // Validaciones adicionales
+            $errores = [];
+
+            // Validar que la placa cumpla con el formato: 3 letras seguidas de 3 números (ej. ABC123)
+            if (!preg_match('/^[A-Z]{3}[0-9]{3}$/i', $_POST['placa'])) {
+                echo json_encode(['success' => false, 'message' => 'La placa debe tener el formato correcto: 3 letras seguidas de 3 números (ej: ABC123)']);
+                exit;
+            }
+
+
+            // Validar año (numérico y entre un rango razonable)
+            $anio_actual = date('Y');
+            $anio = $_POST['anio'];
+            if (!is_numeric($anio) || $anio < 1900 || $anio > $anio_actual) {
+                $errores[] = 'El año debe ser un número válido entre 1900 y ' . $anio_actual;
+            }
+
+            // Validar kilometraje
+            $kilometraje = $_POST['kilometraje_actual'];
+            if (!is_numeric($kilometraje) || $kilometraje < 0) {
+                $errores[] = 'El kilometraje debe ser un número positivo.';
+            }
+
+            // Validar modelo (longitud y caracteres)
+            $modelo = trim($_POST['modelo']);
+            if (strlen($modelo) < 2 || strlen($modelo) > 50) {
+                $errores[] = 'El modelo debe tener entre 2 y 50 caracteres.';
+            }
+
+            // Validar que el documento sea numérico
+            if (!is_numeric($_POST['documento'])) {
+                $errores[] = 'El documento debe ser numérico.';
+            }
+
+            // Si hay errores, detener y responder
+            if (!empty($errores)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => implode(' ', $errores)
+                ]);
+                exit;
+            }
+
+
             // Insertar vehículo en la base de datos
             $sql = "INSERT INTO vehiculos (tipo_vehiculo, id_marca, placa, modelo, `año`, id_color, kilometraje_actual, id_estado, Documento, foto_vehiculo, fecha_registro, registrado_por) 
                     VALUES (:tipo_vehiculo, :id_marca, :placa, :modelo, :anio, :id_color, :kilometraje, :estado, :documento, :foto_vehiculo, NOW(), :registrado_por)";
-            
+
             $stmt = $con->prepare($sql);
             $stmt->bindParam(':tipo_vehiculo', $_POST['tipo_vehiculo']);
             $stmt->bindParam(':id_marca', $_POST['id_marca']);
@@ -85,28 +129,26 @@ try {
             $stmt->bindParam(':documento', $_POST['documento']);
             $stmt->bindParam(':foto_vehiculo', $foto_vehiculo);
             $stmt->bindParam(':registrado_por', $registrado_por);
-            
+
             if ($stmt->execute()) {
                 echo json_encode(['success' => true, 'message' => 'Vehículo agregado exitosamente']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Error al guardar el vehículo']);
             }
             break;
-            
+
         case 'editar':
             // Código para editar vehículo (mantener el existente)
             break;
-            
+
         case 'eliminar':
             // Código para eliminar vehículo (mantener el existente)
             break;
-            
+
         default:
             echo json_encode(['success' => false, 'message' => 'Acción no válida']);
             break;
     }
-    
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()]);
 }
-?>
