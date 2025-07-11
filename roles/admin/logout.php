@@ -19,7 +19,7 @@ if (!defined('BASE_URL')) {
     // Detecta si el servidor es localhost (entorno de desarrollo)
     if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false) {
         // Define BASE_URL para entorno local (XAMPP)
-        define('BASE_URL', '/Proyecto');
+        define('BASE_URL', '/flotavehicular');
     } else {
         // Define BASE_URL para entorno de producción (hosting)
         define('BASE_URL', ''); // O '/subcarpeta' si tu proyecto está en una subcarpeta en el hosting

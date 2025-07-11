@@ -130,7 +130,7 @@ if (!$nombre_completo || !$foto_perfil) {
   <?php include 'modals_usuarios/usuario_modals.php'; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="modals_usuarios/usuarios-scripts.js"></script>
+  <script src="modals_usuarios/usuarios_scripts.js"></script>
   
 <script>
 

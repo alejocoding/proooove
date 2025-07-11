@@ -564,8 +564,8 @@ try {
                     return false;
                 }
 
-                if (!soloNumeros.test(telefono)) {
-                    Swal.fire('Error', 'El teléfono debe contener solo números.', 'warning');
+                if (!soloNumeros.test(telefono) || telefono.length < 9 || telefono.length > 11) {
+                    Swal.fire('Error', 'El teléfono debe contener solo números y tener entre 9 y 11 dígitos.', 'warning');
                     return false;
                 }
 

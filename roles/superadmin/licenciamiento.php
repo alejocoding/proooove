@@ -475,35 +475,47 @@ try {
         </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const formEmpresa = document.querySelector('#formNuevaEmpresa');
-            const formLicencia = document.querySelector('#formAsignarLicencia');
-            const hoy = new Date().toISOString().split("T")[0];
-            const fechaInicio = document.querySelector('[name="fecha_inicio"]');
-            const fechaVenc = document.querySelector('[name="fecha_vencimiento"]');
+        document.addEventListener("DOMContentLoaded", function() {
+            const formEmpresa = document.getElementById("formNuevaEmpresa");
 
-            if (fechaInicio) fechaInicio.setAttribute("min", hoy);
-            if (fechaVenc) fechaVenc.setAttribute("min", hoy);
-
-            // ========================
-            // VALIDAR Y ENVIAR EMPRESA
-            // ========================
             if (formEmpresa) {
                 formEmpresa.addEventListener("submit", function(e) {
                     e.preventDefault();
 
-                    const nit = this.querySelector('[name="nit"]').value.trim();
-                    const telefono = this.querySelector('[name="telefono"]').value.trim();
-                    const email = this.querySelector('[name="email"]').value.trim();
+                    const nombre = formEmpresa.nombre_empresa.value.trim();
+                    const nit = formEmpresa.nit.value.trim();
+                    const direccion = formEmpresa.direccion.value.trim();
+                    const telefono = formEmpresa.telefono.value.trim();
+                    const email = formEmpresa.email.value.trim();
 
-                    const nitRegex = /^[0-9\-]+$/;
+                    const nombreRegex = /^[a-zA-ZÀ-ÿ0-9 .,'\\-]{3,100}$/;
+                    const nitRegex = /^[0-9\-]{5,20}$/;
+                    const direccionRegex = /^.{5,150}$/;
                     const telRegex = /^\d{8,15}$/;
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-                    let errores = [];
+                    if (!nombre || !nombreRegex.test(nombre)) {
+                        alert("El nombre de la empresa debe tener entre 3 y 100 caracteres.");
+                        return;
+                    }
 
-                    if (errores.length > 0) {
-                        alert(errores.join("\n"));
+                    if (!nit || !nitRegex.test(nit)) {
+                        alert("El NIT debe tener entre 5 y 20 caracteres, solo números y guiones.");
+                        return;
+                    }
+
+                    if (!direccion || !direccionRegex.test(direccion)) {
+                        alert("La dirección debe tener entre 5 y 150 caracteres.");
+                        return;
+                    }
+
+                    if (!telefono || !telRegex.test(telefono)) {
+                        alert("El teléfono debe tener entre 8 y 15 dígitos numéricos.");
+                        return;
+                    }
+
+                    if (!email || !emailRegex.test(email)) {
+                        alert("El correo electrónico no tiene un formato válido.");
                         return;
                     }
 
@@ -521,18 +533,39 @@ try {
                         })
                         .catch(() => alert("Error al registrar la empresa."));
                 });
+
+                const nitInput = formEmpresa.querySelector('[name="nit"]');
+                const telInput = formEmpresa.querySelector('[name="telefono"]');
+
+                if (nitInput) {
+                    nitInput.addEventListener("input", function() {
+                        this.value = this.value.replace(/[^0-9\-]/g, '');
+                    });
+                }
+
+                if (telInput) {
+                    telInput.addEventListener("input", function() {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    });
+                }
             }
 
-            // ========================
-            // VALIDAR Y ENVIAR LICENCIA
-            // ========================
+            const formLicencia = document.querySelector('#formAsignarLicencia');
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const fechaInicio = document.querySelector('[name="fecha_inicio"]');
+            const fechaVenc = document.querySelector('[name="fecha_vencimiento"]');
+
+            if (fechaInicio) fechaInicio.setAttribute("min", hoy.toISOString().split("T")[0]);
+            if (fechaVenc) fechaVenc.setAttribute("min", hoy.toISOString().split("T")[0]);
+
             if (formLicencia) {
                 const tipoLicencia = formLicencia.querySelector('[name="tipo_licencia"]');
-                const maxUsuarios = formLicencia.querySelector('[name="max_usuarios"]');
-                const maxVehiculos = formLicencia.querySelector('[name="max_vehiculos"]');
+                const maxUsuarios = document.createElement('input');
+                const maxVehiculos = document.createElement('input');
                 const claveInput = formLicencia.querySelector('[name="clave_licencia"]');
 
-                // Autocompletar capacidades
                 tipoLicencia.addEventListener("change", () => {
                     switch (tipoLicencia.value) {
                         case "basica":
@@ -550,20 +583,19 @@ try {
                     }
                 });
 
-                // Deshabilitar edición manual de clave
                 if (claveInput) {
                     claveInput.setAttribute("readonly", true);
                     claveInput.value = "Se generará automáticamente";
                 }
 
-                // Envío AJAX con validación
                 formLicencia.addEventListener("submit", function(e) {
                     e.preventDefault();
 
                     const fInicio = new Date(fechaInicio.value);
                     const fVenc = new Date(fechaVenc.value);
-                    const hoy = new Date();
-                    hoy.setHours(0, 0, 0, 0);
+
+                    fInicio.setHours(0, 0, 0, 0);
+                    fVenc.setHours(0, 0, 0, 0);
 
                     let errores = [];
 
@@ -590,79 +622,6 @@ try {
                         .catch(() => alert("Error al asignar licencia."));
                 });
             }
-
-            // ========================
-            // VERIFICAR LICENCIAS AL CARGAR
-            // ========================
-            fetch("licenciamiento_backend.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: "action=verificar_licencias"
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const form = document.getElementById("formNuevaEmpresa");
-
-            form.addEventListener("submit", function(e) {
-                e.preventDefault(); // evita envío
-
-                const nombre = form.nombre_empresa.value.trim();
-                const nit = form.nit.value.trim();
-                const direccion = form.direccion.value.trim();
-                const telefono = form.telefono.value.trim();
-                const email = form.email.value.trim();
-
-                let errores = [];
-
-                const nitRegex = /^[0-9\-]+$/;
-                const telRegex = /^[0-9]{10}$/;
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                if (!nombre) errores.push("El nombre de la empresa es obligatorio.");
-                if (!nit || !nitRegex.test(nit)) errores.push("El NIT solo puede contener números y guiones.");
-                if (!telefono || !telRegex.test(telefono)) errores.push("El teléfono debe tener 10 dígitos numéricos.");
-                if (!email || !emailRegex.test(email)) errores.push("El correo electrónico no tiene un formato válido.");
-
-                if (errores.length > 0) {
-                    alert(errores.join("\n"));
-                    return;
-                }
-
-                // Si todo es válido, enviar el formulario vía fetch
-                const formData = new FormData(form);
-                formData.append("action", "crear_empresa");
-
-                fetch("licenciamiento_backend.php", {
-                        method: "POST",
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) location.reload();
-                    })
-                    .catch(() => alert("Error al registrar la empresa."));
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const nitInput = document.querySelector('[name="nit"]');
-            const telInput = document.querySelector('[name="telefono"]');
-
-            nitInput.addEventListener("input", function() {
-                this.value = this.value.replace(/[^0-9\-]/g, '');
-            });
-
-            telInput.addEventListener("input", function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
         });
     </script>
 

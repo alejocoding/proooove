@@ -26,7 +26,8 @@ $nombre_completo = $_SESSION['nombre_completo'];
 $foto_perfil = $_SESSION['foto_perfil'];
 
 // Función para obtener el ícono según tipo
-function getAlertIcon($tipo) {
+function getAlertIcon($tipo)
+{
     return match (strtolower($tipo)) {
         'soat' => 'bi-shield-check',
         'tecnomecanica', 'revision' => 'bi-gear',
@@ -41,9 +42,10 @@ function getAlertIcon($tipo) {
 }
 
 // Función para categorizar notificaciones según su contenido
-function categorizarNotificacion($mensaje) {
+function categorizarNotificacion($mensaje)
+{
     $mensaje_lower = strtolower($mensaje);
-    
+
     if (strpos($mensaje_lower, 'soat') !== false) {
         return 'soat';
     } elseif (strpos($mensaje_lower, 'técnico-mecánica') !== false || strpos($mensaje_lower, 'tecnomecanica') !== false) {
@@ -66,7 +68,8 @@ function categorizarNotificacion($mensaje) {
 }
 
 // Función para extraer placa del mensaje
-function extraerPlaca($mensaje) {
+function extraerPlaca($mensaje)
+{
     // Buscar patrones de placa (3 letras + 3 números o similar)
     if (preg_match('/\b[A-Z]{3}[0-9]{3}\b|\b[A-Z]{3}[0-9]{2}[A-Z]\b|\b[A-Z]{2}[0-9]{4}\b/i', $mensaje, $matches)) {
         return strtoupper($matches[0]);
@@ -75,9 +78,10 @@ function extraerPlaca($mensaje) {
 }
 
 // Función para determinar prioridad
-function determinarPrioridad($mensaje, $tipo) {
+function determinarPrioridad($mensaje, $tipo)
+{
     $mensaje_lower = strtolower($mensaje);
-    
+
     if (strpos($mensaje_lower, 'vence') !== false || strpos($mensaje_lower, 'vencido') !== false) {
         return 'alta';
     } elseif (strpos($mensaje_lower, 'próximo') !== false || strpos($mensaje_lower, 'programado') !== false) {
@@ -90,13 +94,14 @@ function determinarPrioridad($mensaje, $tipo) {
 }
 
 // Función para determinar estado
-function determinarEstado($mensaje, $leido) {
+function determinarEstado($mensaje, $leido)
+{
     if ($leido) {
         return 'informativa';
     }
-    
+
     $mensaje_lower = strtolower($mensaje);
-    
+
     if (strpos($mensaje_lower, 'vencido') !== false || strpos($mensaje_lower, 'urgente') !== false) {
         return 'critica';
     } elseif (strpos($mensaje_lower, 'vence') !== false || strpos($mensaje_lower, 'próximo') !== false) {
@@ -127,7 +132,7 @@ try {
         $placa = extraerPlaca($row['mensaje']);
         $prioridad = determinarPrioridad($row['mensaje'], $tipo);
         $estado = determinarEstado($row['mensaje'], $row['leido']);
-        
+
         $alertas[] = [
             'id' => $row['id'],
             'tipo' => ucfirst($tipo),
@@ -181,10 +186,9 @@ try {
 
     // Tiempo promedio de resolución (simulado)
     $tiempo_promedio_resolucion = $alertas_resueltas_total > 0 ? rand(1, 5) : 0;
-    
+
     // Tasa de éxito
     $tasa_exito = $total_alertas > 0 ? round(($alertas_resueltas_total / ($total_alertas + $alertas_resueltas_total)) * 100) : 100;
-
 } catch (PDOException $e) {
     $alertas_resueltas_mes = 0;
     $alertas_resueltas_total = 0;
@@ -195,7 +199,7 @@ try {
 // Manejar acciones AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
-    
+
     try {
         switch ($_POST['action']) {
             case 'resolver_alerta':
@@ -205,21 +209,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $stmt->bindParam(':id', $alerta_id, PDO::PARAM_INT);
                     $stmt->bindParam(':documento', $documento);
                     $success = $stmt->execute();
-                    
+
                     echo json_encode(['success' => $success, 'message' => $success ? 'Alerta resuelta correctamente' : 'Error al resolver la alerta']);
                 } else {
                     echo json_encode(['success' => false, 'message' => 'ID de alerta no válido']);
                 }
                 break;
-                
+
             case 'marcar_todas_leidas':
                 $stmt = $con->prepare("UPDATE notificaciones SET leido = 1 WHERE documento_usuario = :documento AND leido = 0");
                 $stmt->bindParam(':documento', $documento);
                 $success = $stmt->execute();
-                
+
                 echo json_encode(['success' => $success, 'message' => $success ? 'Todas las alertas han sido marcadas como leídas' : 'Error al marcar las alertas']);
                 break;
-                
+
             default:
                 echo json_encode(['success' => false, 'message' => 'Acción no válida']);
         }
@@ -232,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -241,6 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
 </head>
 
 <body>
@@ -361,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 </h3>
                 <span class="alerts-count" id="alertasCount"><?= $total_alertas ?> alertas</span>
             </div>
-            
+
             <ul class="alerts-list" id="alertasList">
                 <?php if (empty($alertas)): ?>
                     <li class="no-alerts-item">
@@ -373,67 +379,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     </li>
                 <?php else: ?>
                     <?php foreach ($alertas as $alerta): ?>
-                    <li class="alert-item <?= $alerta['estado'] ?>" 
-                        data-tipo="<?= strtolower($alerta['tipo']) ?>" 
-                        data-estado="<?= $alerta['estado'] ?>" 
-                        data-vehiculo="<?= strtolower($alerta['vehiculo']) ?>"
-                        data-prioridad="<?= $alerta['prioridad'] ?>"
-                        data-id="<?= $alerta['id'] ?>">
-                        
-                        <div class="alert-priority <?= $alerta['prioridad'] ?>"></div>
-                        
-                        <div class="alert-icon <?= $alerta['estado'] ?>">
-                            <i class="<?= getAlertIcon($alerta['tipo']) ?>"></i>
-                        </div>
-                        
-                        <div class="alert-content">
-                            <div class="alert-type">
+                        <li class="alert-item <?= $alerta['estado'] ?>"
+                            data-tipo="<?= strtolower($alerta['tipo']) ?>"
+                            data-estado="<?= $alerta['estado'] ?>"
+                            data-vehiculo="<?= strtolower($alerta['vehiculo']) ?>"
+                            data-prioridad="<?= $alerta['prioridad'] ?>"
+                            data-id="<?= $alerta['id'] ?>">
+
+                            <div class="alert-priority <?= $alerta['prioridad'] ?>"></div>
+
+                            <div class="alert-icon <?= $alerta['estado'] ?>">
                                 <i class="<?= getAlertIcon($alerta['tipo']) ?>"></i>
-                                <?= htmlspecialchars($alerta['tipo']) ?>
-                                <?php if ($alerta['vehiculo'] !== 'N/A'): ?>
-                                    <span class="alert-vehicle"><?= htmlspecialchars($alerta['vehiculo']) ?></span>
-                                <?php endif; ?>
-                                <?php if (!$alerta['leido']): ?>
-                                    <span class="badge bg-danger ms-2">Nuevo</span>
-                                <?php endif; ?>
                             </div>
-                            <div class="alert-description"><?= htmlspecialchars($alerta['descripcion']) ?></div>
-                            <div class="alert-date">
-                                <i class="bi bi-calendar"></i>
-                                <?= date('d/m/Y H:i', strtotime($alerta['fecha_alerta'])) ?>
+
+                            <div class="alert-content">
+                                <div class="alert-type">
+                                    <i class="<?= getAlertIcon($alerta['tipo']) ?>"></i>
+                                    <?= htmlspecialchars($alerta['tipo']) ?>
+                                    <?php if ($alerta['vehiculo'] !== 'N/A'): ?>
+                                        <span class="alert-vehicle"><?= htmlspecialchars($alerta['vehiculo']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!$alerta['leido']): ?>
+                                        <span class="badge bg-danger ms-2">Nuevo</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="alert-description"><?= htmlspecialchars($alerta['descripcion']) ?></div>
+                                <div class="alert-date">
+                                    <i class="bi bi-calendar"></i>
+                                    <?= date('d/m/Y H:i', strtotime($alerta['fecha_alerta'])) ?>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="alert-status">
-                            <span class="status-badge <?= $alerta['estado'] ?>">
-                                <?php if ($alerta['estado'] === 'critica'): ?>
-                                    <i class="bi bi-exclamation-triangle-fill"></i> Crítica
-                                <?php elseif ($alerta['estado'] === 'pendiente'): ?>
-                                    <i class="bi bi-clock-fill"></i> Pendiente
-                                <?php else: ?>
-                                    <i class="bi bi-info-circle-fill"></i> Informativa
-                                <?php endif; ?>
-                            </span>
-                            <small class="text-muted d-block mt-1">
-                                Prioridad: <?= ucfirst($alerta['prioridad']) ?>
-                            </small>
-                        </div>
-                        
-                        <div class="alert-actions">
-                            <a href="#" onclick="verDetalles(<?= $alerta['id'] ?>)" class="action-btn primary">
-                                <i class="bi bi-eye"></i> Ver
-                            </a>
-                            <?php if (!$alerta['leido']): ?>
-                                <a href="#" onclick="resolverAlerta(<?= $alerta['id'] ?>)" class="action-btn success">
-                                    <i class="bi bi-check"></i> Resolver
-                                </a>
-                            <?php else: ?>
-                                <span class="action-btn disabled">
-                                    <i class="bi bi-check-circle"></i> Resuelta
+
+                            <div class="alert-status">
+                                <span class="status-badge <?= $alerta['estado'] ?>">
+                                    <?php if ($alerta['estado'] === 'critica'): ?>
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Crítica
+                                    <?php elseif ($alerta['estado'] === 'pendiente'): ?>
+                                        <i class="bi bi-clock-fill"></i> Pendiente
+                                    <?php else: ?>
+                                        <i class="bi bi-info-circle-fill"></i> Informativa
+                                    <?php endif; ?>
                                 </span>
-                            <?php endif; ?>
-                        </div>
-                    </li>
+                                <small class="text-muted d-block mt-1">
+                                    Prioridad: <?= ucfirst($alerta['prioridad']) ?>
+                                </small>
+                            </div>
+
+                            <div class="alert-actions">
+                                <a href="#" onclick="verDetalles(<?= $alerta['id'] ?>)" class="action-btn primary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <?php if (!$alerta['leido']): ?>
+                                    <a href="#" onclick="resolverAlerta(<?= $alerta['id'] ?>)" class="action-btn success">
+                                        <i class="bi bi-check"></i> Resolver
+                                    </a>
+                                <?php else: ?>
+                                    <span class="action-btn disabled">
+                                        <i class="bi bi-check-circle"></i> Resuelta
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </li>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </ul>
@@ -455,7 +461,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             <p class="resolved-description">
                 Resumen de alertas que han sido gestionadas exitosamente en el sistema.
             </p>
-            
+
             <div class="resolved-stats">
                 <div class="resolved-stat">
                     <div class="resolved-stat-number"><?= $alertas_resueltas_mes ?></div>
@@ -475,11 +481,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal para detalles de alerta -->
-    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <!-- Modal para detalles de alerta -->
+        <div class="modal fade" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title d-flex align-items-center" id="modalDetallesLabel">
@@ -490,64 +495,160 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 </div>
                 <div class="modal-body p-0" id="detallesContenido">
                     <!-- Contenido dinámico -->
-                    <div class="d-flex justify-content-center align-items-center p-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
+                    <div class="p-4">
+                        <div class="alert-info-card">
+                            <h4 class="alert-title">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Cambio de Llantas Vencido
+                            </h4>
+                            
+                            <div class="info-item">
+                                <strong>Usuario:</strong> Instructor César
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Documento:</strong> 1234567890
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Vehículo:</strong> ABC-123
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Fecha:</strong> 2025-07-02 00:25:51
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Mensaje:</strong> Hola Instructor cesar, el cambio de llantas de tu vehículo ABC-123 está vencido desde hace 5 días. Es necesario programar la cita lo antes posible.
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Estado:</strong> <span class="badge bg-danger">Activa</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Prioridad:</strong> <span class="badge bg-danger">Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="alert-info-card">
+                            <h4 class="alert-title">
+                                <i class="bi bi-calendar-x me-2"></i>
+                                SOAT Próximo a Vencer
+                            </h4>
+                            
+                            <div class="info-item">
+                                <strong>Usuario:</strong> Federico
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Documento:</strong> 1110174530
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Vehículo:</strong> DEF-456
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Fecha:</strong> 2025-07-02 02:14:29
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Mensaje:</strong> Hola federico, el SOAT de tu vehículo con placa DEF-456 vence en 15 días. Recuerda renovarlo antes del vencimiento.
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Estado:</strong> <span class="badge bg-danger">Pendiente</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Prioridad:</strong> <span class="badge bg-danger">Media</span>
+                            </div>
+                        </div>
+
+                        <div class="alert-info-card">
+                            <h4 class="alert-title">
+                                <i class="bi bi-wrench me-2"></i>
+                                Mantenimiento Técnico-Mecánico
+                            </h4>
+                            
+                            <div class="info-item">
+                                <strong>Usuario:</strong> Francy
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Documento:</strong> 1109490190
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Vehículo:</strong> GHI-789
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Fecha:</strong> 2025-07-02 02:18:26
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Mensaje:</strong> Hola francy, la técnico-mecánica de tu vehículo GHI-789 está próxima a vencer. Faltan 10 días para el vencimiento, programa tu cita.
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Estado:</strong> <span class="badge bg-danger">Activa</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <strong>Prioridad:</strong> <span class="badge bg-danger">Alta</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i>
-                        Cerrar
-                    </button>
-                    <button type="button" class="btn btn-success" id="btnResolverModal" onclick="resolverDesdeModal()">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Resolver Alerta
-                    </button>
-                </div>
+                                 
             </div>
         </div>
     </div>
+    </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         let alertaActual = null;
-        
+
         // Aplicar filtros combinados
         function aplicarFiltros() {
             const filtroTipo = document.getElementById('filtroTipo').value.toLowerCase();
             const filtroEstado = document.getElementById('filtroEstado').value.toLowerCase();
             const filtroVehiculo = document.getElementById('filtroVehiculo').value.toLowerCase();
             const filtroPrioridad = document.getElementById('filtroPrioridad').value.toLowerCase();
-            
+
             const alertas = document.querySelectorAll('.alert-item');
             let alertasVisibles = 0;
-            
+
             alertas.forEach(alerta => {
                 const tipo = alerta.dataset.tipo || '';
                 const estado = alerta.dataset.estado || '';
                 const vehiculo = alerta.dataset.vehiculo || '';
                 const prioridad = alerta.dataset.prioridad || '';
-                
+
                 let mostrar = true;
-                
+
                 if (filtroTipo && !tipo.includes(filtroTipo)) mostrar = false;
                 if (filtroEstado && estado !== filtroEstado) mostrar = false;
                 if (filtroVehiculo && !vehiculo.includes(filtroVehiculo)) mostrar = false;
                 if (filtroPrioridad && prioridad !== filtroPrioridad) mostrar = false;
-                
+
                 alerta.style.display = mostrar ? 'flex' : 'none';
                 if (mostrar) alertasVisibles++;
             });
-            
+
             // Actualizar contador
             document.getElementById('alertasCount').textContent = `${alertasVisibles} alertas`;
-            
+
             // Mostrar mensaje si no hay alertas
             const noAlertas = document.getElementById('noAlertas');
             const alertasList = document.getElementById('alertasList');
-            
+
             if (alertasVisibles === 0) {
                 noAlertas.style.display = 'block';
                 alertasList.style.display = 'none';
@@ -581,7 +682,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         function verDetalles(id) {
             const modal = new bootstrap.Modal(document.getElementById('modalDetalles'));
             const detallesContenido = document.getElementById('detallesContenido');
-            
+
             // Mostrar loading
             detallesContenido.innerHTML = `
                 <div class="d-flex justify-content-center align-items-center p-5">
@@ -590,14 +691,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     </div>
                 </div>
             `;
-            
+
             modal.show();
             alertaActual = id;
-            
+
             // Buscar la alerta en los datos
             const alertas = <?= json_encode($alertas) ?>;
             const alerta = alertas.find(a => a.id == id);
-            
+
             setTimeout(() => {
                 if (alerta) {
                     const fechaFormateada = new Date(alerta.fecha_alerta).toLocaleString('es-ES', {
@@ -607,24 +708,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                    
+
                     // Determinar colores y estilos
                     let estadoBadge = 'bg-secondary';
                     let prioridadBadge = 'bg-secondary';
                     let tipoColor = 'text-primary';
-                    
-                    switch(alerta.estado) {
-                        case 'critica': estadoBadge = 'bg-danger'; break;
-                        case 'pendiente': estadoBadge = 'bg-warning text-dark'; break;
-                        case 'informativa': estadoBadge = 'bg-info'; break;
+
+                    switch (alerta.estado) {
+                        case 'critica':
+                            estadoBadge = 'bg-danger';
+                            break;
+                        case 'pendiente':
+                            estadoBadge = 'bg-warning text-dark';
+                            break;
+                        case 'informativa':
+                            estadoBadge = 'bg-info';
+                            break;
                     }
-                    
-                    switch(alerta.prioridad) {
-                        case 'alta': prioridadBadge = 'bg-danger'; break;
-                        case 'media': prioridadBadge = 'bg-warning text-dark'; break;
-                        case 'baja': prioridadBadge = 'bg-secondary'; break;
+
+                    switch (alerta.prioridad) {
+                        case 'alta':
+                            prioridadBadge = 'bg-danger';
+                            break;
+                        case 'media':
+                            prioridadBadge = 'bg-warning text-dark';
+                            break;
+                        case 'baja':
+                            prioridadBadge = 'bg-secondary';
+                            break;
                     }
-                    
+
                     // Actualizar botón de resolver
                     const btnResolver = document.getElementById('btnResolverModal');
                     if (alerta.leido) {
@@ -632,7 +745,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     } else {
                         btnResolver.style.display = 'inline-block';
                     }
-                    
+
                     detallesContenido.innerHTML = `
                         <div class="container-fluid p-4">
                             <!-- Header de la alerta -->
@@ -821,74 +934,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 // Mostrar loading en el botón
                 const alertaElement = document.querySelector(`[data-id="${id}"]`);
                 const btnResolver = alertaElement?.querySelector('.action-btn.success');
-                
+
                 if (btnResolver) {
                     btnResolver.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando...';
                     btnResolver.style.pointerEvents = 'none';
                 }
-                
+
                 // Enviar petición AJAX
                 fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=resolver_alerta&alerta_id=${id}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Actualizar la interfaz
-                        if (alertaElement) {
-                            alertaElement.style.opacity = '0.6';
-                            alertaElement.style.transform = 'translateX(10px)';
-                            
-                            // Actualizar el botón
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `action=resolver_alerta&alerta_id=${id}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Actualizar la interfaz
+                            if (alertaElement) {
+                                alertaElement.style.opacity = '0.6';
+                                alertaElement.style.transform = 'translateX(10px)';
+
+                                // Actualizar el botón
+                                if (btnResolver) {
+                                    btnResolver.outerHTML = '<span class="action-btn disabled"><i class="bi bi-check-circle"></i> Resuelta</span>';
+                                }
+
+                                // Agregar badge de "Resuelta"
+                                const badgeContainer = alertaElement.querySelector('.alert-type');
+                                if (badgeContainer && !badgeContainer.querySelector('.badge')) {
+                                    badgeContainer.innerHTML += ' <span class="badge bg-success ms-2">Resuelta</span>';
+                                }
+                            }
+
+                            // Cerrar modal si está abierto
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalles'));
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            // Mostrar mensaje de éxito
+                            mostrarNotificacion('Alerta resuelta correctamente', 'success');
+
+                            // Actualizar contadores después de un breve delay
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+
+                        } else {
+                            mostrarNotificacion(data.message || 'Error al resolver la alerta', 'error');
+
+                            // Restaurar botón
                             if (btnResolver) {
-                                btnResolver.outerHTML = '<span class="action-btn disabled"><i class="bi bi-check-circle"></i> Resuelta</span>';
-                            }
-                            
-                            // Agregar badge de "Resuelta"
-                            const badgeContainer = alertaElement.querySelector('.alert-type');
-                            if (badgeContainer && !badgeContainer.querySelector('.badge')) {
-                                badgeContainer.innerHTML += ' <span class="badge bg-success ms-2">Resuelta</span>';
+                                btnResolver.innerHTML = '<i class="bi bi-check"></i> Resolver';
+                                btnResolver.style.pointerEvents = 'auto';
                             }
                         }
-                        
-                        // Cerrar modal si está abierto
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalles'));
-                        if (modal) {
-                            modal.hide();
-                        }
-                        
-                        // Mostrar mensaje de éxito
-                        mostrarNotificacion('Alerta resuelta correctamente', 'success');
-                        
-                        // Actualizar contadores después de un breve delay
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                        
-                    } else {
-                        mostrarNotificacion(data.message || 'Error al resolver la alerta', 'error');
-                        
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mostrarNotificacion('Error de conexión', 'error');
+
                         // Restaurar botón
                         if (btnResolver) {
                             btnResolver.innerHTML = '<i class="bi bi-check"></i> Resolver';
                             btnResolver.style.pointerEvents = 'auto';
                         }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error de conexión', 'error');
-                    
-                    // Restaurar botón
-                    if (btnResolver) {
-                        btnResolver.innerHTML = '<i class="bi bi-check"></i> Resolver';
-                        btnResolver.style.pointerEvents = 'auto';
-                    }
-                });
+                    });
             }
         }
 
@@ -903,27 +1016,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         function marcarTodasLeidas() {
             if (confirm('¿Está seguro de marcar todas las alertas como leídas?')) {
                 fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'action=marcar_todas_leidas'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        mostrarNotificacion('Todas las alertas han sido marcadas como leídas', 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        mostrarNotificacion(data.message || 'Error al marcar las alertas', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error de conexión', 'error');
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'action=marcar_todas_leidas'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            mostrarNotificacion('Todas las alertas han sido marcadas como leídas', 'success');
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            mostrarNotificacion(data.message || 'Error al marcar las alertas', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mostrarNotificacion('Error de conexión', 'error');
+                    });
             }
         }
 
@@ -958,7 +1071,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-danger' : 'alert-info';
             const iconClass = tipo === 'success' ? 'bi-check-circle' : tipo === 'error' ? 'bi-exclamation-triangle' : 'bi-info-circle';
-            
+
             const notification = document.createElement('div');
             notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -967,9 +1080,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 ${mensaje}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             // Auto-remove después de 5 segundos
             setTimeout(() => {
                 if (notification.parentNode) {
@@ -985,7 +1098,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             alertas.forEach((alerta, index) => {
                 alerta.style.animationDelay = `${index * 0.1}s`;
             });
-            
+
             // Auto-actualizar cada 5 minutos
             setInterval(() => {
                 console.log('Verificando nuevas alertas...');
@@ -994,4 +1107,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         });
     </script>
 </body>
+
 </html>

@@ -14,8 +14,10 @@
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
   --border-color: #e2e8f0;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --sidebar-width: 80px;
   --sidebar-expanded-width: 280px;
@@ -413,7 +415,11 @@ body {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, var(--primary-color), var(--border-color));
+  background: linear-gradient(
+    to bottom,
+    var(--primary-color),
+    var(--border-color)
+  );
 }
 
 .timeline-item {
@@ -981,4 +987,116 @@ body {
   border: 5px solid transparent;
   border-top-color: var(--secondary-color);
   z-index: 1000;
+}
+
+.modal-overlay {
+  background: rgba(239, 83, 80, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content-custom {
+  border: none;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-color);
+  overflow: hidden;
+}
+
+.modal-header-custom {
+  display: flex;
+  justify-content: space-between;
+  background: var(--primary-gradient);
+  color: white;
+  border-bottom: none;
+  padding: 1.5rem 2rem;
+}
+
+.modal-title-custom {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  opacity: 0.8;
+  transition: var(--transition);
+}
+
+.btn-close-custom:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.modal-body-custom {
+  padding: 2rem;
+  color: var(--text-color);
+}
+
+.loading-content-custom {
+  display: none;
+}
+
+.loading-content-custom.show {
+  display: block;
+}
+
+.spinner-border-custom {
+  color: var(--primary-color);
+  width: 3rem;
+  height: 3rem;
+}
+
+.dynamic-content-custom {
+  min-height: 200px;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content-custom {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Estilos adicionales para el contenido dinámico */
+.dynamic-content-custom h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.dynamic-content-custom p {
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.dynamic-content-custom .badge {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-dialog-custom {
+    margin: 1rem;
+  }
+
+  .modal-header-custom,
+  .modal-body-custom {
+    padding: 1rem;
+  }
 }

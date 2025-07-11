@@ -499,14 +499,76 @@ try {
             let modoEdicion = false;
             let placaActual = '';
 
-            document.addEventListener('DOMContentLoaded', function() {
-                modalVehiculo = new bootstrap.Modal(document.getElementById('modalVehiculo'));
+            function validarFormularioVehiculo() {
+                const placa = document.getElementById('placa').value.trim();
+                const modelo = document.getElementById('modelo').value.trim();
+                const año = parseInt(document.getElementById('año').value, 10);
+                const kilometraje = parseInt(document.getElementById('kilometraje_actual').value, 10);
+                const foto = document.getElementById('foto_vehiculo').files[0];
 
-                document.getElementById('formVehiculo').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    guardarVehiculo();
-                });
-            });
+                const documento = document.getElementById('Documento').value;
+                const marca = document.getElementById('id_marca').value;
+                const tipo = document.getElementById('tipo_vehiculo').value;
+                const color = document.getElementById('id_color').value;
+                const estado = document.getElementById('id_estado').value;
+
+                const placaRegex = /^(?=(?:.*[0-9]){2,})(?=.*[A-Z])[A-Z0-9]{5,8}$/i;
+                const modeloRegex = /^[a-zA-Z0-9\s\-]{2,15}$/;
+
+
+                if (!placaRegex.test(placa)) {
+                    alert('La placa debe tener entre 5 y 8 caracteres alfanuméricos.');
+                    return false;
+                }
+
+                if (!documento) {
+                    alert('Debe seleccionar un propietario.');
+                    return false;
+                }
+
+                if (!marca) {
+                    alert('Debe seleccionar una marca.');
+                    return false;
+                }
+
+                if (!modeloRegex.test(modelo)) {
+                    alert('El modelo debe tener entre 2 y 15 caracteres (letras, números, espacios o guiones).');
+                    return false;
+                }
+
+                const añoActual = new Date().getFullYear();
+                if (isNaN(año) || año < 1970 || año > añoActual) {
+                    alert(`El año debe estar entre 1970 y ${añoActual}.`);
+                    return false;
+                }
+
+                if (!tipo) {
+                    alert('Debe seleccionar el tipo de vehículo.');
+                    return false;
+                }
+
+                if (isNaN(kilometraje) || kilometraje < 0 || kilometraje > 999999) {
+                    alert('Debe ingresar un número entre 0 y 999999 para el kilometraje.');
+                    return false;
+                }
+
+                if (!color) {
+                    alert('Debe seleccionar el color del vehículo.');
+                    return false;
+                }
+
+                if (!estado) {
+                    alert('Debe seleccionar el estado del vehículo.');
+                    return false;
+                }
+
+                if (foto && !foto.type.startsWith('image/')) {
+                    alert('La foto del vehículo debe ser una imagen.');
+                    return false;
+                }
+
+                return true;
+            }
 
             function abrirModalNuevoVehiculo() {
                 modoEdicion = false;
@@ -578,13 +640,17 @@ try {
 
 
             function guardarVehiculo() {
+
+                if (!validarFormularioVehiculo()) {
+                    return; // Si la validación falla, no continúa
+                }
                 const formData = new FormData(document.getElementById('formVehiculo'));
                 formData.append('action', modoEdicion ? 'actualizar_vehiculo' : 'crear_vehiculo');
 
                 if (modoEdicion) {
                     formData.append('placa_original', placaActual);
                 }
-                
+
                 const año = parseInt(formData.get('año'), 10);
                 const kilometraje = parseInt(formData.get('kilometraje_actual'), 10);
 
@@ -657,6 +723,19 @@ try {
                     }
                 });
             }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const modalElement = document.getElementById('modalVehiculo');
+                if (modalElement) {
+                    modalVehiculo = new bootstrap.Modal(modalElement);
+                }
+
+                // Captura el envío del formulario
+                document.getElementById('formVehiculo').addEventListener('submit', function(e) {
+                    e.preventDefault(); // Evita el envío normal
+                    guardarVehiculo(); // Llama a la función JS
+                });
+            });
         </script>
 </body>
 

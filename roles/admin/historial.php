@@ -22,16 +22,17 @@ if (!$nombre_completo || !$foto_perfil) {
     $user_query->bindParam(':documento', $documento, PDO::PARAM_STR);
     $user_query->execute();
     $user = $user_query->fetch(PDO::FETCH_ASSOC);
-    
+
     $nombre_completo = $user['nombre_completo'] ?? 'Usuario';
     $foto_perfil = $user['foto_perfil'] ?: 'roles/user/css/img/perfil.jpg';
-    
+
     $_SESSION['nombre_completo'] = $nombre_completo;
     $_SESSION['foto_perfil'] = $foto_perfil;
 }
 
 // Función para obtener el icono según el tipo de evento
-function getEventIcon($tipo) {
+function getEventIcon($tipo)
+{
     switch (strtolower($tipo)) {
         case 'mantenimiento':
             return 'bi-tools';
@@ -51,43 +52,47 @@ function getEventIcon($tipo) {
 }
 
 // Función para formatear fechas
-function formatearFecha($fecha) {
+function formatearFecha($fecha)
+{
     return date('d/m/Y H:i', strtotime($fecha));
 }
 
 // Función para obtener el nombre del usuario
-function obtenerNombreUsuario($con, $documento) {
+function obtenerNombreUsuario($con, $documento)
+{
     if (!$documento) return 'Sistema';
-    
+
     $query = $con->prepare("SELECT nombre_completo FROM usuarios WHERE documento = :documento");
     $query->bindParam(':documento', $documento, PDO::PARAM_STR);
     $query->execute();
     $result = $query->fetch(PDO::FETCH_ASSOC);
-    
+
     return $result ? $result['nombre_completo'] : 'Usuario Desconocido';
 }
 
 // Función para obtener nombre de aseguradora
-function obtenerAseguradora($con, $id_aseguradora) {
+function obtenerAseguradora($con, $id_aseguradora)
+{
     if (!$id_aseguradora) return 'N/A';
-    
+
     $query = $con->prepare("SELECT nombre FROM aseguradoras_soat WHERE id_asegura = :id");
     $query->bindParam(':id', $id_aseguradora, PDO::PARAM_INT);
     $query->execute();
     $result = $query->fetch(PDO::FETCH_ASSOC);
-    
+
     return $result ? $result['nombre'] : 'N/A';
 }
 
 // Función para obtener centro de revisión
-function obtenerCentroRevision($con, $id_centro) {
+function obtenerCentroRevision($con, $id_centro)
+{
     if (!$id_centro) return 'N/A';
-    
+
     $query = $con->prepare("SELECT centro_revision FROM centro_rtm WHERE id_centro = :id");
     $query->bindParam(':id', $id_centro, PDO::PARAM_INT);
     $query->execute();
     $result = $query->fetch(PDO::FETCH_ASSOC);
-    
+
     return $result ? $result['centro_revision'] : 'N/A';
 }
 
@@ -110,7 +115,7 @@ try {
     ");
     $query_registros->execute();
     $registros = $query_registros->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($registros as $registro) {
         $historial[] = [
             'id' => 'reg_' . $registro['documento_usuario'] . '_' . strtotime($registro['fecha']),
@@ -143,7 +148,7 @@ try {
     ");
     $query_mantenimiento->execute();
     $mantenimientos = $query_mantenimiento->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($mantenimientos as $mant) {
         $historial[] = [
             'id' => 'mant_' . $mant['documento_usuario'] . '_' . strtotime($mant['fecha']),
@@ -180,7 +185,7 @@ try {
     ");
     $query_llantas->execute();
     $llantas = $query_llantas->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($llantas as $llanta) {
         $historial[] = [
             'id' => 'llanta_' . $llanta['documento_usuario'] . '_' . strtotime($llanta['fecha']),
@@ -214,7 +219,7 @@ try {
     ");
     $query_soat->execute();
     $soats = $query_soat->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($soats as $soat) {
         $historial[] = [
             'id' => 'soat_' . $soat['documento_usuario'] . '_' . strtotime($soat['fecha']),
@@ -249,7 +254,7 @@ try {
     ");
     $query_tecno->execute();
     $tecnos = $query_tecno->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($tecnos as $tecno) {
         $historial[] = [
             'id' => 'tecno_' . $tecno['documento_usuario'] . '_' . strtotime($tecno['fecha']),
@@ -285,7 +290,7 @@ try {
     ");
     $query_licencias->execute();
     $licencias = $query_licencias->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($licencias as $licencia) {
         $historial[] = [
             'id' => 'lic_' . $licencia['documento_usuario'] . '_' . strtotime($licencia['fecha']),
@@ -300,14 +305,13 @@ try {
             'categoria' => $licencia['id_categoria']
         ];
     }
-
 } catch (PDOException $e) {
     error_log("Error al obtener historial: " . $e->getMessage());
     $historial = [];
 }
 
 // Ordenar historial por fecha (más reciente primero)
-usort($historial, function($a, $b) {
+usort($historial, function ($a, $b) {
     return strtotime($b['fecha']) - strtotime($a['fecha']);
 });
 
@@ -323,6 +327,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -347,7 +352,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                 </h1>
                 <p class="page-subtitle">Registro completo de actividades y eventos del sistema</p>
             </div>
-         </div>
+        </div>
 
         <!-- Estadísticas del historial -->
         <div class="history-stats">
@@ -407,7 +412,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                     <span>Mostrar filtros</span>
                 </button>
             </div>
-            
+
             <div class="filters-grid" id="filtersGrid" style="display: none;">
                 <div class="filter-group">
                     <label class="filter-label">Tipo de Evento</label>
@@ -483,69 +488,69 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                         </div>
                     <?php else: ?>
                         <?php foreach ($historial as $evento): ?>
-                        <div class="timeline-item <?= $evento['tipo'] ?>" 
-                             data-tipo="<?= $evento['tipo'] ?>" 
-                             data-vehiculo="<?= strtolower($evento['vehiculo']) ?>"
-                             data-fecha="<?= date('Y-m-d', strtotime($evento['fecha'])) ?>"
-                             data-usuario="<?= strtolower($evento['usuario']) ?>">
-                            
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <div class="timeline-type <?= $evento['tipo'] ?>">
-                                        <i class="<?= getEventIcon($evento['tipo']) ?>"></i>
-                                        <?= ucfirst($evento['tipo']) ?>
+                            <div class="timeline-item <?= $evento['tipo'] ?>"
+                                data-tipo="<?= $evento['tipo'] ?>"
+                                data-vehiculo="<?= strtolower($evento['vehiculo']) ?>"
+                                data-fecha="<?= date('Y-m-d', strtotime($evento['fecha'])) ?>"
+                                data-usuario="<?= strtolower($evento['usuario']) ?>">
+
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <div class="timeline-type <?= $evento['tipo'] ?>">
+                                            <i class="<?= getEventIcon($evento['tipo']) ?>"></i>
+                                            <?= ucfirst($evento['tipo']) ?>
+                                        </div>
+                                        <div class="timeline-date">
+                                            <i class="bi bi-calendar"></i>
+                                            <?= formatearFecha($evento['fecha']) ?>
+                                        </div>
                                     </div>
-                                    <div class="timeline-date">
-                                        <i class="bi bi-calendar"></i>
-                                        <?= formatearFecha($evento['fecha']) ?>
-                                    </div>
-                                </div>
-                                
-                                <?php if ($evento['vehiculo'] !== 'N/A'): ?>
-                                <div class="timeline-vehicle"><?= htmlspecialchars($evento['vehiculo']) ?></div>
-                                <?php endif; ?>
-                                
-                                <div class="timeline-description">
-                                    <?= htmlspecialchars($evento['descripcion']) ?>
-                                </div>
-                                
-                                <div class="timeline-details">
-                                    <div class="timeline-detail">
-                                        <span class="timeline-detail-label">Usuario:</span>
-                                        <span class="timeline-detail-value"><?= htmlspecialchars($evento['usuario']) ?></span>
-                                    </div>
-                                    
-                                    <?php if (isset($evento['aseguradora'])): ?>
-                                    <div class="timeline-detail">
-                                        <span class="timeline-detail-label">Aseguradora:</span>
-                                        <span class="timeline-detail-value"><?= htmlspecialchars($evento['aseguradora']) ?></span>
-                                    </div>
+
+                                    <?php if ($evento['vehiculo'] !== 'N/A'): ?>
+                                        <div class="timeline-vehicle"><?= htmlspecialchars($evento['vehiculo']) ?></div>
                                     <?php endif; ?>
-                                    
-                                    <?php if (isset($evento['centro'])): ?>
-                                    <div class="timeline-detail">
-                                        <span class="timeline-detail-label">Centro:</span>
-                                        <span class="timeline-detail-value"><?= htmlspecialchars($evento['centro']) ?></span>
+
+                                    <div class="timeline-description">
+                                        <?= htmlspecialchars($evento['descripcion']) ?>
                                     </div>
-                                    <?php endif; ?>
-                                    
-                                    <div class="timeline-detail">
-                                        <span class="timeline-detail-label">Estado:</span>
-                                        <span class="timeline-detail-value">
-                                            <span class="status-indicator <?= $evento['estado'] === 'completado' || $evento['estado'] === 'vigente' ? 'success' : ($evento['estado'] === 'pendiente' ? 'warning' : 'danger') ?>"></span>
-                                            <?= ucfirst($evento['estado']) ?>
-                                        </span>
+
+                                    <div class="timeline-details">
+                                        <div class="timeline-detail">
+                                            <span class="timeline-detail-label">Usuario:</span>
+                                            <span class="timeline-detail-value"><?= htmlspecialchars($evento['usuario']) ?></span>
+                                        </div>
+
+                                        <?php if (isset($evento['aseguradora'])): ?>
+                                            <div class="timeline-detail">
+                                                <span class="timeline-detail-label">Aseguradora:</span>
+                                                <span class="timeline-detail-value"><?= htmlspecialchars($evento['aseguradora']) ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (isset($evento['centro'])): ?>
+                                            <div class="timeline-detail">
+                                                <span class="timeline-detail-label">Centro:</span>
+                                                <span class="timeline-detail-value"><?= htmlspecialchars($evento['centro']) ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <div class="timeline-detail">
+                                            <span class="timeline-detail-label">Estado:</span>
+                                            <span class="timeline-detail-value">
+                                                <span class="status-indicator <?= $evento['estado'] === 'completado' || $evento['estado'] === 'vigente' ? 'success' : ($evento['estado'] === 'pendiente' ? 'warning' : 'danger') ?>"></span>
+                                                <?= ucfirst($evento['estado']) ?>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <div class="timeline-actions">
-                                    <a href="#" onclick="verDetalles('<?= $evento['id'] ?>')" class="timeline-action view">
-                                        <i class="bi bi-eye"></i>
-                                        Ver detalles
-                                    </a>
+
+                                    <div class="timeline-actions">
+                                        <a href="#" onclick="verDetalles('<?= $evento['id'] ?>')" class="timeline-action view">
+                                            <i class="bi bi-eye"></i>
+                                            Ver detalles
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -568,34 +573,34 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                         </thead>
                         <tbody>
                             <?php foreach ($historial as $evento): ?>
-                            <tr data-tipo="<?= $evento['tipo'] ?>" 
-                                data-vehiculo="<?= strtolower($evento['vehiculo']) ?>"
-                                data-fecha="<?= date('Y-m-d', strtotime($evento['fecha'])) ?>"
-                                data-usuario="<?= strtolower($evento['usuario']) ?>">
-                                <td><?= formatearFecha($evento['fecha']) ?></td>
-                                <td>
-                                    <span class="event-type <?= $evento['tipo'] ?>">
-                                        <i class="<?= getEventIcon($evento['tipo']) ?>"></i>
-                                        <?= ucfirst($evento['tipo']) ?>
-                                    </span>
-                                </td>
-                                <td><?= $evento['vehiculo'] !== 'N/A' ? '<strong>' . htmlspecialchars($evento['vehiculo']) . '</strong>' : 'N/A' ?></td>
-                                <td class="tooltip-trigger" data-tooltip="<?= htmlspecialchars($evento['detalles']) ?>">
-                                    <?= htmlspecialchars(substr($evento['descripcion'], 0, 50)) ?>...
-                                </td>
-                                <td><?= htmlspecialchars($evento['usuario']) ?></td>
-                                <td>
-                                    <span class="status-indicator <?= $evento['estado'] === 'completado' || $evento['estado'] === 'vigente' ? 'success' : ($evento['estado'] === 'pendiente' ? 'warning' : 'danger') ?>"></span>
-                                    <?= ucfirst($evento['estado']) ?>
-                                </td>
-                                <td>
-                                    <div class="timeline-actions">
-                                        <a href="#" onclick="verDetalles('<?= $evento['id'] ?>')" class="timeline-action view">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                                <tr data-tipo="<?= $evento['tipo'] ?>"
+                                    data-vehiculo="<?= strtolower($evento['vehiculo']) ?>"
+                                    data-fecha="<?= date('Y-m-d', strtotime($evento['fecha'])) ?>"
+                                    data-usuario="<?= strtolower($evento['usuario']) ?>">
+                                    <td><?= formatearFecha($evento['fecha']) ?></td>
+                                    <td>
+                                        <span class="event-type <?= $evento['tipo'] ?>">
+                                            <i class="<?= getEventIcon($evento['tipo']) ?>"></i>
+                                            <?= ucfirst($evento['tipo']) ?>
+                                        </span>
+                                    </td>
+                                    <td><?= $evento['vehiculo'] !== 'N/A' ? '<strong>' . htmlspecialchars($evento['vehiculo']) . '</strong>' : 'N/A' ?></td>
+                                    <td class="tooltip-trigger" data-tooltip="<?= htmlspecialchars($evento['detalles']) ?>">
+                                        <?= htmlspecialchars(substr($evento['descripcion'], 0, 50)) ?>...
+                                    </td>
+                                    <td><?= htmlspecialchars($evento['usuario']) ?></td>
+                                    <td>
+                                        <span class="status-indicator <?= $evento['estado'] === 'completado' || $evento['estado'] === 'vigente' ? 'success' : ($evento['estado'] === 'pendiente' ? 'warning' : 'danger') ?>"></span>
+                                        <?= ucfirst($evento['estado']) ?>
+                                    </td>
+                                    <td>
+                                        <div class="timeline-actions">
+                                            <a href="#" onclick="verDetalles('<?= $evento['id'] ?>')" class="timeline-action view">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -614,22 +619,63 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
             <h3>No se encontraron eventos</h3>
             <p>No hay eventos que coincidan con los filtros seleccionados.</p>
         </div>
-    </div>
 
-    <!-- Modal para detalles -->
-    <div class="modal fade" id="modalDetalles" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Evento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <!-- Modal para detalles -->
+        
+    <div class="modal fade modal-overlay" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-custom">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title modal-title-custom" id="modalDetallesLabel">Detalles del Evento</h5>
+                    <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Cerrar">×</button>
                 </div>
-                <div class="modal-body" id="detallesContenido">
-                    <!-- Contenido dinámico -->
+                <div class="modal-body modal-body-custom" id="detallesContenido">
+                    <div class="text-center py-4 loading-content-custom">
+                        
+                        <div class="spinner-border spinner-border-custom" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
     </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('modalDetalles');
+            const loadingContent = modal.querySelector('.loading-content');
+            const dynamicContent = modal.querySelector('.dynamic-content');
+
+            // Mostrar loading cuando se abre el modal
+            modal.addEventListener('show.bs.modal', function() {
+                loadingContent.classList.remove('d-none');
+                dynamicContent.innerHTML = '';
+            });
+
+            // Ocultar loading cuando se cierra el modal
+            modal.addEventListener('hidden.bs.modal', function() {
+                loadingContent.classList.add('d-none');
+                dynamicContent.innerHTML = '';
+            });
+
+            // Función para cargar contenido dinámico
+            window.cargarContenidoModal = function(contenido) {
+                loadingContent.classList.add('d-none');
+                dynamicContent.innerHTML = contenido;
+                // Animar la entrada del contenido
+                dynamicContent.style.opacity = '0';
+                setTimeout(() => {
+                    dynamicContent.style.transition = 'opacity 0.3s ease';
+                    dynamicContent.style.opacity = '1';
+                }, 50);
+            };
+        });
+        </script>
+    </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -642,9 +688,9 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
             const toggleBtn = document.querySelector('.filters-toggle');
             const toggleText = toggleBtn.querySelector('span');
             const toggleIcon = toggleBtn.querySelector('i');
-            
+
             filtersVisible = !filtersVisible;
-            
+
             if (filtersVisible) {
                 filtersGrid.style.display = 'grid';
                 toggleText.textContent = 'Ocultar filtros';
@@ -662,9 +708,9 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
             const tableView = document.getElementById('tableView');
             const timelineBtn = document.getElementById('timelineBtn');
             const tableBtn = document.getElementById('tableBtn');
-            
+
             currentView = vista;
-            
+
             if (vista === 'timeline') {
                 timelineView.style.display = 'block';
                 tableView.style.display = 'none';
@@ -695,55 +741,55 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
             const filtroDesde = document.getElementById('filtroDesde').value;
             const filtroHasta = document.getElementById('filtroHasta').value;
             const filtroUsuario = document.getElementById('filtroUsuario').value.toLowerCase();
-            
+
             const timelineItems = document.querySelectorAll('.timeline-item');
             const tableRows = document.querySelectorAll('#historyTable tbody tr');
             let eventosVisibles = 0;
-            
+
             // Filtrar timeline
             timelineItems.forEach(item => {
                 const tipo = item.dataset.tipo || '';
                 const vehiculo = item.dataset.vehiculo || '';
                 const fecha = item.dataset.fecha || '';
                 const usuario = item.dataset.usuario || '';
-                
+
                 let mostrar = true;
-                
+
                 if (filtroTipo && tipo !== filtroTipo) mostrar = false;
                 if (filtroVehiculo && !vehiculo.includes(filtroVehiculo)) mostrar = false;
                 if (filtroUsuario && !usuario.includes(filtroUsuario)) mostrar = false;
                 if (filtroDesde && fecha < filtroDesde) mostrar = false;
                 if (filtroHasta && fecha > filtroHasta) mostrar = false;
-                
+
                 item.style.display = mostrar ? 'block' : 'none';
                 if (mostrar) eventosVisibles++;
             });
-            
+
             // Filtrar tabla
             tableRows.forEach(row => {
                 const tipo = row.dataset.tipo || '';
                 const vehiculo = row.dataset.vehiculo || '';
                 const fecha = row.dataset.fecha || '';
                 const usuario = row.dataset.usuario || '';
-                
+
                 let mostrar = true;
-                
+
                 if (filtroTipo && tipo !== filtroTipo) mostrar = false;
                 if (filtroVehiculo && !vehiculo.includes(filtroVehiculo)) mostrar = false;
                 if (filtroUsuario && !usuario.includes(filtroUsuario)) mostrar = false;
                 if (filtroDesde && fecha < filtroDesde) mostrar = false;
                 if (filtroHasta && fecha > filtroHasta) mostrar = false;
-                
+
                 row.style.display = mostrar ? '' : 'none';
             });
-            
+
             // Actualizar contador
             document.getElementById('historyCount').textContent = `${eventosVisibles} eventos`;
-            
+
             // Mostrar mensaje si no hay eventos
             const noHistory = document.getElementById('noHistory');
             const historyView = document.querySelector('.history-view');
-            
+
             if (eventosVisibles === 0) {
                 noHistory.style.display = 'block';
                 historyView.style.display = 'none';
@@ -751,7 +797,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                 noHistory.style.display = 'none';
                 historyView.style.display = 'block';
             }
-            
+
             if (currentView === 'table') {
                 configurarPaginacion();
             }
@@ -769,9 +815,10 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
 
         // Paginación para vista de tabla
         const filasPorPagina = 10;
+
         function configurarPaginacion() {
             const filas = Array.from(document.querySelectorAll('#historyTable tbody tr'))
-                                 .filter(row => row.style.display !== 'none');
+                .filter(row => row.style.display !== 'none');
             const totalPaginas = Math.ceil(filas.length / filasPorPagina);
             const paginacion = document.getElementById('pagination');
 
@@ -779,13 +826,13 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                 document.querySelectorAll('#historyTable tbody tr').forEach(row => {
                     row.style.display = 'none';
                 });
-                
+
                 const inicio = (pagina - 1) * filasPorPagina;
                 const fin = inicio + filasPorPagina;
                 filas.slice(inicio, fin).forEach(row => {
                     row.style.display = '';
                 });
-                
+
                 document.querySelectorAll('#pagination .page-item').forEach(btn => {
                     btn.classList.remove('active');
                 });
@@ -800,7 +847,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                 a.className = 'page-link';
                 a.href = '#';
                 a.textContent = i;
-                a.addEventListener('click', function (e) {
+                a.addEventListener('click', function(e) {
                     e.preventDefault();
                     mostrarPagina(i);
                 });
@@ -816,11 +863,11 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
         function verDetalles(id) {
             const modal = new bootstrap.Modal(document.getElementById('modalDetalles'));
             const detallesContenido = document.getElementById('detallesContenido');
-            
+
             // Buscar el evento en los datos
             const eventos = <?= json_encode($historial) ?>;
             const evento = eventos.find(e => e.id === id);
-            
+
             if (evento) {
                 detallesContenido.innerHTML = `
                     <div class="p-3">
@@ -864,7 +911,7 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
                     </div>
                 `;
             }
-            
+
             modal.show();
         }
 
@@ -883,19 +930,19 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
             const hoy = new Date();
             const hace30dias = new Date();
             hace30dias.setDate(hoy.getDate() - 30);
-            
+
             document.getElementById('filtroDesde').value = hace30dias.toISOString().split('T')[0];
             document.getElementById('filtroHasta').value = hoy.toISOString().split('T')[0];
-            
+
             // Aplicar filtros iniciales
             aplicarFiltros();
-            
+
             // Agregar animación a los elementos del timeline
             const timelineItems = document.querySelectorAll('.timeline-item');
             timelineItems.forEach((item, index) => {
                 item.style.animationDelay = `${index * 0.1}s`;
             });
-            
+
             // Agregar animación a las filas de la tabla
             const tableRows = document.querySelectorAll('#historyTable tbody tr');
             tableRows.forEach((row, index) => {
@@ -904,4 +951,5 @@ $registros = count(array_filter($historial, fn($h) => $h['tipo'] === 'registro')
         });
     </script>
 </body>
+
 </html>
