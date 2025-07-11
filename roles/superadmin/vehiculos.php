@@ -499,6 +499,26 @@ try {
             let modoEdicion = false;
             let placaActual = '';
 
+
+            /* …todo lo anterior… */
+            document.getElementById('placa').addEventListener('input', e => {
+                e.target.value = e.target.value.toUpperCase();
+            });
+            // ─── FUNCIÓN PARA VALIDAR PLACA ESPECIAL ───
+            function esPlacaValida(placa) {
+                placa = placa.toUpperCase().trim(); // normaliza
+                if (!/^[A-Z]/.test(placa)) return false; // debe empezar con letra
+                if (!/^[A-Z0-9]+$/.test(placa)) return false; // solo letras y números
+
+                const letras = placa.match(/[A-Z]/g) || [];
+                const numeros = placa.match(/\d/g) || [];
+
+                return (
+                    letras.length >= 2 && letras.length <= 4 &&
+                    numeros.length >= 2 && numeros.length <= 3
+                );
+            }
+
             function validarFormularioVehiculo() {
                 const placa = document.getElementById('placa').value.trim();
                 const modelo = document.getElementById('modelo').value.trim();
@@ -512,12 +532,12 @@ try {
                 const color = document.getElementById('id_color').value;
                 const estado = document.getElementById('id_estado').value;
 
-                const placaRegex = /^(?=(?:.*[0-9]){2,})(?=.*[A-Z])[A-Z0-9]{5,8}$/i;
+
                 const modeloRegex = /^[a-zA-Z0-9\s\-]{2,15}$/;
 
 
-                if (!placaRegex.test(placa)) {
-                    alert('La placa debe tener entre 5 y 8 caracteres alfanuméricos.');
+                if (!esPlacaValida(placa)) {
+                    alert('La placa debe empezar con letra y contener 2‑4 letras + 2‑3 números (ej: SA2D2, A12B, ABC23).');
                     return false;
                 }
 

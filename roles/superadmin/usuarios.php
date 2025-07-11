@@ -569,6 +569,12 @@ try {
                     return false;
                 }
 
+                // SOLO CUANDO SE CREA EL USUARIO, validar contraseña obligatoria
+                if (!modoEdicion && password.length === 0) {
+                    Swal.fire('Error', 'La contraseña es obligatoria para crear un nuevo usuario.', 'warning');
+                    return false;
+                }
+
                 if (password.length > 0 && !regexPassword.test(password)) {
                     Swal.fire('Error', 'La contraseña debe tener al menos una mayúscula, una minúscula, un número y mínimo 8 caracteres.', 'warning');
                     return false;

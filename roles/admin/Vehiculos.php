@@ -243,9 +243,9 @@ function getEstadoClass($estado)
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a class="action-icon view" 
-                                               title="Ver detalles"
-                                               data-placa="<?= htmlspecialchars($resu['placa']) ?>">
+                                            <a class="action-icon view"
+                                                title="Ver detalles"
+                                                data-placa="<?= htmlspecialchars($resu['placa']) ?>">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             <a class="action-icon edit"
@@ -519,7 +519,7 @@ function getEstadoClass($estado)
                     // Cerrar modal de detalles
                     const modalDetalles = bootstrap.Modal.getInstance(document.getElementById('verDetallesVehiculoModal'));
                     modalDetalles.hide();
-                    
+
                     // Abrir modal de editar
                     setTimeout(() => {
                         const editBtn = document.querySelector(`.action-icon.edit[data-placa="${placa}"]`);
@@ -537,7 +537,7 @@ function getEstadoClass($estado)
                 .then(data => {
                     if (data.success) {
                         const vehicle = data.vehicle;
-                        
+
                         // Llenar información del vehículo
                         document.getElementById('detallePlaca').textContent = vehicle.placa || '-';
                         document.getElementById('detalleTipoVehiculo').textContent = vehicle.tipo_vehiculo_nombre || '-';
@@ -547,21 +547,21 @@ function getEstadoClass($estado)
                         document.getElementById('detalleColor').textContent = vehicle.color_nombre || '-';
                         document.getElementById('detalleEstado').textContent = vehicle.estado_vehiculo || '-';
                         document.getElementById('detalleKilometraje').textContent = vehicle.kilometraje_formateado || '-';
-                        
+
                         // Llenar información del propietario
                         document.getElementById('detalleDocumento').textContent = vehicle.Documento || '-';
                         document.getElementById('detalleNombrePropietario').textContent = vehicle.nombre_propietario || '-';
                         document.getElementById('detalleEmailPropietario').textContent = vehicle.email_propietario || '-';
                         document.getElementById('detalleTelefonoPropietario').textContent = vehicle.telefono_propietario || '-';
-                        
+
                         // Llenar información de registro
                         document.getElementById('detalleFechaRegistro').textContent = vehicle.fecha_registro_formateada || '-';
                         document.getElementById('detalleRegistradoPor').textContent = vehicle.nombre_registrador || '-';
-                        
+
                         // Manejar la imagen
                         const imgElement = document.getElementById('detalleFotoVehiculo');
                         const infoFoto = document.getElementById('detalleInfoFoto');
-                        
+
                         if (vehicle.tiene_foto) {
                             imgElement.src = vehicle.foto_url;
                             infoFoto.textContent = 'Foto del vehículo';
@@ -569,7 +569,7 @@ function getEstadoClass($estado)
                             imgElement.src = vehicle.foto_url;
                             infoFoto.textContent = 'Sin foto disponible';
                         }
-                        
+
                         // Mostrar el modal
                         const modal = new bootstrap.Modal(document.getElementById('verDetallesVehiculoModal'));
                         modal.show();
@@ -583,7 +583,46 @@ function getEstadoClass($estado)
                 });
         }
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
+            /* ─────── 1. Expresión regular para la placa ───────
+               - Formato convencional en Colombia: AAA123
+               - Permitimos opcionalmente guion intermedio (AAA‑123) o espacio (AAA 123)
+            */
+            const placaRegex = /^[A-Z]{3}[-\s]?\d{3}$/;
+
+            /* ─────── 2. Función de validación ─────── */
+            function validarPlaca(valorPlaca) {
+                // Normalizamos: quitamos espacios laterales y convertimos a mayúsculas
+                const placa = valorPlaca.trim().toUpperCase();
+                return placaRegex.test(placa);
+            }
+
+            /* ─────── 3. Interceptamos ENVÍO de ambos formularios ─────── */
+            ['formCrearVehiculo', 'formEditarVehiculo'].forEach(id => {
+                const form = document.getElementById(id);
+                if (!form) return;
+
+                form.addEventListener('submit', e => {
+                    const placaInput = form.querySelector('[name="placa"]');
+                    if (!placaInput) return; // si no encuentra el campo, deja pasar
+                    const placaValida = validarPlaca(placaInput.value);
+
+                    if (!placaValida) {
+                        e.preventDefault(); // ❌ bloquea el envío
+                        alert('La placa debe tener el formato 3 letras seguidas de 3 números (ej: ABC123).');
+                        placaInput.focus();
+                        return;
+                    }
+
+                    // Si quieres guardar la placa ya normalizada (mayúsculas y sin espacios)
+                    placaInput.value = placaInput.value.trim().toUpperCase();
+                });
+            });
+
+        });
+    </script>
 
 </body>
 
